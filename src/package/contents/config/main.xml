@@ -11,4 +11,12 @@
       <default>true</default>
     </entry>
 
+    <entry name="systemTorService" type="String">
+      <default>tor</default>
+    </entry>
+
+    <entry name="torBrowserExecutable" type="String">
+      <default>start-tor-browser.desktop</default>
+    </entry>
+
 </kcfg>

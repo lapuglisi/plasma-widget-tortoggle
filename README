@@ -1,12 +1,11 @@
 Tor Controller plasmoid
 ----------------------
 
-This is a fork from the original repository: https://github.com/plasma-extensions/plasma-widget-tortoggle
-I plan to add more functionalities to the Widget, such as:
-1. Offer an option to define the Tor service to control.
-2. Add a "Launch Tor Browser" button.
-3. Add UI improvements.
-4. Apply some bug fixes
+This is a fork of the original repository: https://github.com/plasma-extensions/plasma-widget-tortoggle
+This repository aims at adding more functionalities to the widget, such as:
+- Offer an option to define the service name of the tor instance (system)
+- Add a button to launch the Tor Browser.
+- Add UI improvements
 
 -- Build instructions --
 

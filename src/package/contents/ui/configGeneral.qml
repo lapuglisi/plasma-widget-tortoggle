@@ -10,17 +10,55 @@ Item {
     id: configPage;
     width: childrenRect.width;
     height: childrenRect.height;
-    implicitWidth: mainColumn.implicitWidth;
-    implicitHeight: pageColumn.implicitHeight;
+    implicitWidth: pageGrid.implicitWidth;
+    implicitHeight: pageGrid.implicitHeight;
 
     property alias cfg_systemTor: systemTorField.checked;
+    property alias cfg_systemTorService: systemTorServiceField.text;
+    property alias cfg_torBrowserExecutable: torBrowserExecutable.text;
 
-    QtLayouts.ColumnLayout {
-        id: pageColumn;
-        anchors.left: parent.left
-        QtControls.CheckBox {
-            id: systemTorField;
-            text: "Use system tor instance (requires super user access, aka sudo)";
+    QtLayouts.GridLayout {
+        id: pageGrid;
+
+        QtLayouts.Layout.alignment: AlignLeft;
+        QtLayouts.Layout.fillWidth: true;
+
+        flow: QtLayouts.GridLayout.TopToBottom;
+        rows: 3;
+        rowSpacing: 15;
+
+        QtLayouts.RowLayout {
+            QtControls.CheckBox {
+                id: systemTorField;
+                text: "Use system tor instance (requires super user access, aka sudo)";
+            }
+        }
+
+        QtLayouts.RowLayout {            
+            QtControls.Label {
+                QtLayouts.Layout.preferredWidth: 150;
+                id: torServiceLabel;
+                text: "Tor service name:"
+            }
+
+            QtControls.TextField {
+                QtLayouts.Layout.fillWidth: true;
+                id: systemTorServiceField;
+                text: "tor";
+            }
+        }
+
+        QtLayouts.RowLayout {            
+            QtControls.Label {
+                QtLayouts.Layout.preferredWidth: 150;
+                id: torBrowserExecLabel;
+                text: "Tor Browser executable:"
+            }
+            QtControls.TextField {
+                QtLayouts.Layout.fillWidth: true;
+                id: torBrowserExecutable;
+                text: "start-tor-browser";
+            }
         }
     }
 }

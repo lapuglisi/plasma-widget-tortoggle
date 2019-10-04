@@ -29,7 +29,10 @@ class torcontrol : public Plasma::Applet
     Q_PROPERTY(QString buttonLabel READ buttonLabel NOTIFY statusChanged)
     Q_PROPERTY(RunningStatus status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(QString iconName READ iconName NOTIFY statusChanged)
+    Q_PROPERTY(bool torBrowserEnabled READ torBrowserEnabled NOTIFY statusChanged)
     Q_PROPERTY(bool systemTor READ systemTor WRITE setSystemTor NOTIFY systemTorChanged)
+    Q_PROPERTY(QString systemTorService READ systemTorService WRITE setSystemTorService NOTIFY systemTorServiceChanged)
+    Q_PROPERTY(QString torBrowserExecutable READ torBrowserExecutable WRITE setTorBrowserExecutable NOTIFY torBrowserExecChanged);
 
     Q_PROPERTY(QString workingOn READ workingOn NOTIFY workingOnChanged);
 public:
@@ -42,6 +45,14 @@ public:
         NotRunning = 2,
         NoTor = 3
     };
+
+    Q_INVOKABLE void launchTorBrowser() const;
+    bool torBrowserEnabled() const;
+    
+    QString torBrowserExecutable() const;
+    void setTorBrowserExecutable(QString);
+    Q_SIGNAL void torBrowserExecChanged();
+
     RunningStatus status() const;
     // NOTE This will attempt to set the status, but given the nature of
     // these things, there is no guarantee that the application will, in fact,
@@ -55,6 +66,10 @@ public:
     bool systemTor() const;
     void setSystemTor(bool newValue);
     Q_SIGNAL void systemTorChanged();
+
+    QString systemTorService() const;
+    void setSystemTorService(QString newValue);
+    Q_SIGNAL void systemTorServiceChanged();
 
     QString workingOn() const;
     Q_SIGNAL void workingOnChanged();

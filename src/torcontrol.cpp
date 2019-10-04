@@ -35,6 +35,8 @@ public:
     Private(torcontrol* qq)
         : q(qq)
         , systemTor(true)
+        , systemTorService("tor")
+        , torBrowserExecutable("start-tor-browser.desktop")
         , whatInit(UnknownInit)
         , torPid(-1)
         , status(Unknown)
@@ -46,13 +48,16 @@ public:
     }
     torcontrol* q;
     bool systemTor;
+    QString systemTorService;
+    QString torBrowserExecutable;
     QString workingOn;
 
     enum InitSystem {
         UnknownInit = 0,
         SysVInit = 1,
         UpstartInit = 2,
-        SystemDInit = 3
+        SystemDInit = 3,
+        Machinectl = 4
     };
     InitSystem whatInit;
     // Find out what init system is being used, so we can use the correct
@@ -60,12 +65,14 @@ public:
     void setWhatInit() {
         whatInit = UnknownInit;
         QProcess test;
+
         test.start("/sbin/init --version");
         if(test.waitForStarted() && test.waitForFinished()) {
             if(test.readAll().contains("upstart")) {
                 whatInit = UpstartInit;
             }
         }
+
         if(whatInit == UnknownInit) {
             test.start("systemctl");
             if(test.waitForStarted() && test.waitForFinished()) {
@@ -74,12 +81,14 @@ public:
                 }
             }
         }
+
         if(whatInit == UnknownInit) {
             QFileInfo cron("/etc/init.d/cron");
             if(cron.exists() && !cron.isSymLink()) {
                 whatInit = SysVInit;
             }
         }
+        
         qDebug() << "Init system is:" << whatInit;
     }
 
@@ -129,6 +138,7 @@ public:
     RunningStatus status;
     bool systemSanityCheck() {
         // check tor install
+        /*
         QProcess torTest;
         torTest.start("tor", QStringList() << "--version");
         if(!(torTest.waitForStarted() && torTest.waitForFinished(1000))) {
@@ -137,6 +147,7 @@ public:
             // tor is not installed...
             return false;
         }
+        */
         // If we get to here, then the system is sane
         return true;
     }
@@ -144,7 +155,7 @@ public:
         if(systemTor && whatInit == SystemDInit) {
             if(systemSanityCheck()) {
                 QProcess statusCheck;
-                statusCheck.start("/usr/sbin/service", QStringList() << "tor" << "status");
+                statusCheck.start("systemctl", QStringList() << "status" << systemTorService);
                 if(statusCheck.waitForStarted() && statusCheck.waitForFinished()) {
                     QString data(statusCheck.readAll());
                     if(data.contains("Active: active")) {
@@ -158,6 +169,22 @@ public:
                     }
                 }
             }
+        }
+        else if (systemTor && whatInit == Machinectl) {
+                QProcess statusCheck;
+                statusCheck.start("systemctl", QStringList() << "status" << systemTorService);
+                if(statusCheck.waitForStarted() && statusCheck.waitForFinished()) {
+                    QString data(statusCheck.readAll());
+                    if(data.contains("Active: active")) {
+                        status = Running;
+                    }
+                    else if(data.contains("Active: inactive")) {
+                        status = NotRunning;
+                    }
+                    else {
+                        status = Unknown;
+                    }
+                }
         }
         else {
             if(torPid > 0) {
@@ -180,6 +207,7 @@ public:
                 if(systemSanityCheck()) {
                     // We've already been stopped, or we checked, so we know our status explicitly
                     status = NotRunning;
+
                 }
             }
         }
@@ -227,7 +255,7 @@ void torcontrol::setStatus(torcontrol::RunningStatus newStatus)
                 // Start tor
                 if(status() == NotRunning || status() == Unknown) {
                     if(d->whatInit == Private::SystemDInit) {
-                        QProcess::execute("/usr/sbin/service", QStringList() << "tor" << "start");
+                        QProcess::execute("systemctl", QStringList() << "start" << d->systemTorService);
                     }
                     else {
                         d->runPrivilegedCommand(QStringList() << "torctl" << "start");
@@ -239,7 +267,7 @@ void torcontrol::setStatus(torcontrol::RunningStatus newStatus)
                 // Stop tor
                 if(status() == Running) {
                     if(d->whatInit == Private::SystemDInit) {
-                        QProcess::execute("/usr/sbin/service", QStringList() << "tor" << "stop");
+                        QProcess::execute("systemctl", QStringList() << "stop" << d->systemTorService);
                     }
                     else {
                         d->runPrivilegedCommand(QStringList() << "torctl" << "stop");
@@ -305,6 +333,22 @@ QString torcontrol::buttonLabel() const
     return text;
 }
 
+bool torcontrol::torBrowserEnabled() const
+{
+    return (status() == Running);
+}
+
+QString torcontrol::torBrowserExecutable() const
+{
+    return d->torBrowserExecutable;
+}
+
+void torcontrol::setTorBrowserExecutable(QString newValue)
+{
+    d->torBrowserExecutable = newValue;
+    emit torBrowserExecChanged();
+}
+
 bool torcontrol::systemTor() const
 {
     return d->systemTor;
@@ -318,9 +362,29 @@ void torcontrol::setSystemTor(bool newValue)
     emit systemTorChanged();
 }
 
+/* systemTorService Property */
+QString torcontrol::systemTorService() const
+{
+    return d->systemTorService;
+}
+
+void torcontrol::setSystemTorService(QString newValue)
+{
+    d->systemTorService = newValue;
+    d->findTorPid();
+    d->updateStatus();
+    emit systemTorServiceChanged();
+}
+
 QString torcontrol::workingOn() const
 {
     return d->workingOn;
+}
+
+void torcontrol::launchTorBrowser() const
+{
+    qDebug() << "Launching tor browser: '" << d->torBrowserExecutable << "'";
+    QProcess::execute(d->torBrowserExecutable);    
 }
 
 void torcontrol::installTOR()

@@ -120,7 +120,8 @@ Item {
                 text: {
                     switch(plasmoid.nativeInterface.status) {
                         case 1:
-                            return i18n("TOR is running");
+                            return i18n("TOR is running\n" + 
+                                "(as '" + plasmoid.nativeInterface.systemTorService + "')");
                             break;
                         case 2:
                             return i18n("TOR is not running");
@@ -132,17 +133,45 @@ Item {
                     }
                 }
             }
-            PlasmaComponents.Button {
-                id: statusIcon;
+            GridLayout {
                 anchors {
                     top: parent.verticalCenter;
-                    horizontalCenter: parent.horizontalCenter;
-                    margins: units.smallSpacing;
+                    bottom: parent.bottom;
+                    right: parent.right;
+                    left: parent.left;
                 }
-                text: plasmoid.nativeInterface.buttonLabel;
-                iconName: plasmoid.nativeInterface.iconName;
-                tooltip: plasmoid.nativeInterface.buttonLabel;
-                onClicked: root.changeRunningStatus();
+
+                Layout.fillWidth: true;
+                columns: 2;
+
+                ColumnLayout {
+                    Layout.minimumWidth: parent.width / 2;
+
+                    PlasmaComponents.Button {
+                        anchors.centerIn: parent;
+
+                        id: statusIcon;
+                        text: plasmoid.nativeInterface.buttonLabel;
+                        iconName: plasmoid.nativeInterface.iconName;
+                        tooltip: plasmoid.nativeInterface.buttonLabel;
+                        onClicked: root.changeRunningStatus();
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.minimumWidth: parent.width / 2;                    
+
+                    PlasmaComponents.Button {
+                        anchors.centerIn: parent;
+
+                        id: torBrowserIcon;
+                        enabled: plasmoid.nativeInterface.torBrowserEnabled;
+                        text: "Launch Tor Browser";
+                        iconName: "torbrowser";
+                        tooltip: "Click to launch '" + plasmoid.nativeInterface.torBrowserExecutable + "'";
+                        onClicked: root.launchTorBrowser();
+                    }
+                }
             }
         }
     }

@@ -38,10 +38,23 @@ Item {
             plasmoid.nativeInterface.status = 1;
         }
     }
+    function launchTorBrowser() {
+        plasmoid.nativeInterface.launchTorBrowser();
+    }
     Binding {
         target: plasmoid.nativeInterface;
         property: "systemTor";
         value: plasmoid.configuration.systemTor;
+    }
+    Binding {
+        target: plasmoid.nativeInterface;
+        property: "systemTorService";
+        value: plasmoid.configuration.systemTorService;
+    }
+    Binding {
+        target: plasmoid.nativeInterface;
+        property: "torBrowserExecutable";
+        value: plasmoid.configuration.torBrowserExecutable;
     }
 
     Plasmoid.compactRepresentation: Item {
